@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <h1>Got music?</h1>
+  <button id="send">Send</button>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io.connect()
+
+		var sendBtn = document.querySelector('#send')
+
+    sendBtn.addEventListener('click', function (evt) {
+      socket.emit('audio', 'fararfafafa')
+    }, false)
+
+    window.onload = function () {
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+      navigator.getUserMedia({ audio: true }, onStream, onError)
+    }
+
+    function onStream (stream) {
+      var ctx = new AudioContext()
+      var source = ctx.createMediaStreamSource(stream)
+      var analyser = ctx.createAnalyser()
+
+      source.connect(analyser)
+
+      var frequencyData = new Uint8Array(analyser.frequencyBinCount)
+
+      function renderFrame () {
+        setTimeout(renderFrame, 80)
+        analyser.getByteFrequencyData(frequencyData)
+        socket.emit('audio', frequencyData)
+      }
+
+      renderFrame()
+    }
+
+    function onError (error) {
+      console.log(error)
+    }
+  </script>
+</body>
+</html>
